@@ -15,7 +15,7 @@ from typing import List, Optional
 
 BASE_CURRENCY = "CNY"
 
-INVESTMENT_TYPES = ["普通存款", "股票", "ETF", "理财", "外币理财"]
+INVESTMENT_TYPES = ["普通存款", "股票", "ETF", "基金", "理财"]
 CURRENCIES = ["CNY", "USD", "HKD", "EUR", "JPY", "GBP"]
 
 TRANSACTION_TYPES = ["买入", "卖出", "存入", "取出", "申购", "赎回", "分红", "利息"]
@@ -32,6 +32,13 @@ def parse_date(value) -> date:
     if isinstance(value, str):
         return date.fromisoformat(value.strip())
     raise ValueError(f"无法解析日期: {value!r}")
+
+
+def normalize_itype(value: str) -> str:
+    """兼容旧数据：外币理财类型已并入“理财”（币种由 currency 字段表达）。"""
+    if value == "外币理财":
+        return "理财"
+    return value
 
 
 @dataclass
@@ -108,7 +115,7 @@ class Investment:
             )
         return Investment(
             name=d["name"],
-            itype=d.get("itype", "理财"),
+            itype=normalize_itype(d.get("itype", "理财")),
             currency=d.get("currency", "CNY"),
             current_value=float(d.get("current_value", 0.0)),
             current_fx=float(d.get("current_fx", 1.0)),

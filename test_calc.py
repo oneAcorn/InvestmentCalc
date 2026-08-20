@@ -58,7 +58,7 @@ inv1 = Investment(name="存款", itype="普通存款", currency="CNY",
                   transactions=[
                       Transaction(date(2023, 1, 1), "存入", 10000.0, 1.0),
                   ])
-inv2 = Investment(name="美元理财", itype="外币理财", currency="USD",
+inv2 = Investment(name="美元理财", itype="理财", currency="USD",
                   current_value=11000.0, current_fx=7.7,
                   transactions=[
                       Transaction(date(2023, 1, 1), "买入", 10000.0, 7.0),
@@ -68,6 +68,11 @@ check("外币人民币收益", approx(st2.profit, 84700 - 70000, 1e-6), st2.prof
 check("外币收益USD", approx(st2.profit_fc, 1000.0, 1e-6), st2.profit_fc)
 check("外币XIRR=21%", approx(st2.xirr, 0.21, 1e-6), st2.xirr)
 check("外币口径XIRR(不含汇率)=10%", approx(st2.xirr_fc, 0.10, 1e-6), st2.xirr_fc)
+
+# 旧数据兼容：外币理财 类型并入 理财
+from investapp.models import Investment as _Inv
+migrated = _Inv.from_dict({"name": "旧", "itype": "外币理财", "transactions": []}).itype
+check("外币理财迁移为理财", migrated == "理财", migrated)
 
 pf = Portfolio([inv1, inv2])
 ps = PortfolioStats(pf.investments, date(2024, 1, 1))

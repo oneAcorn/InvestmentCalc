@@ -8,7 +8,7 @@ from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 
 from .models import (BASE_CURRENCY, CURRENCIES, INVESTMENT_TYPES, Portfolio,
-                     Investment, Transaction, parse_date)
+                     Investment, Transaction, normalize_itype, parse_date)
 
 HEADER_FILL = PatternFill("solid", fgColor="305496")
 HEADER_FONT = Font(color="FFFFFF", bold=True)
@@ -89,7 +89,7 @@ def import_from_excel(path: str) -> Portfolio:
     names = set()
     for r in rows_inv:
         name = str(r[0]).strip()
-        itype = str(r[1]).strip() if r[1] else "理财"
+        itype = normalize_itype(str(r[1]).strip() if r[1] else "理财")
         currency = str(r[2]).strip() if r[2] else "CNY"
         if name in names:
             raise ValueError(f"投资名称重复: {name}")
